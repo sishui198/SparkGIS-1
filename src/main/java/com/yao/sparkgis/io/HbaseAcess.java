@@ -2,8 +2,6 @@ package com.yao.sparkgis.io;
 
 import java.io.IOException;
 
-import javax.ws.rs.PUT;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -18,7 +16,6 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.util.PureJavaCrc32;
 
 public class HbaseAcess {
 	
@@ -26,8 +23,8 @@ public class HbaseAcess {
 	
 	static {
 		configuration = HBaseConfiguration.create();
-		configuration.set("hbase.zookeeper.property.clientPort", "2181");
-		configuration.set("hbase.zookeeper.quorum", "192.168.2.56,192.168.2.57,192.168.2.58");
+		configuration.set("hbase.zookeeper.quorum", "192.168.2.56:2181,192.168.2.57:2181,192.168.2.58:2181");
+		//configuration.set("hbase.zookeeper.property.clientPort", "2181");
 	}
 	
 	public static void createTable(String tableName, String[] family) throws MasterNotRunningException, ZooKeeperConnectionException, IOException {
