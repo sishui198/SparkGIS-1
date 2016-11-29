@@ -2,6 +2,7 @@ package com.yao.sparkgis.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.geotools.data.shapefile.files.ShpFiles;
 import org.geotools.data.shapefile.shp.ShapefileException;
 import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -30,7 +32,7 @@ import org.opengis.feature.type.FeatureType;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-public class ShpAccess {
+public class ShpAccess implements Serializable{
 
 	public Layer readLayer(final String url) throws IOException {
 
@@ -104,7 +106,27 @@ public class ShpAccess {
 		File file = new File(url);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		ShpAccess access = new ShpAccess();
+		SimpleFeatureCollection collection1 = access.readFeatures("/home/yaoxiao/data/shp/ict_landuse.shp");
+		access = null;
+		ShpAccess access1 = new ShpAccess();
+		SimpleFeatureCollection collection2 = access1.readFeatures("/home/yaoxiao/data/shp/ict_counties.shp");
 		
+		SimpleFeatureIterator iterator1 = collection1.features();
+		SimpleFeatureIterator iterator2 = collection2.features();
+		
+		List<SimpleFeature> features1 = new ArrayList<>();
+		List<SimpleFeature> features2 = new ArrayList<>();
+		
+		while (iterator1.hasNext()) {
+			features1.add(iterator1.next());
+		}
+		
+		while (iterator2.hasNext()) {
+			features2.add(iterator2.next());
+		}
+		System.out.println(features1.size());
+		System.out.println(features2.size());
 	}
 }

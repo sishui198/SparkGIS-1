@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
@@ -19,8 +20,8 @@ public class SparkGis {
 	public static void main(String[] args) throws ShapefileException, IOException {
 		SparkConf conf = new SparkConf().setAppName("SparkGIS");
 		//conf.set("spark.akka.frameSize", "512m");
-		conf.set("spark.executor.memory", "4g");
-		//conf.set("spark.master", "local[*]");
+		conf.set("spark.executor.memory", "30g");
+		conf.set("spark.master", "local[*]");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		ShpAccess access = new ShpAccess();
 
@@ -31,19 +32,21 @@ public class SparkGis {
 //			sc.addJar(file.getPath());
 //		}
 		
-		List<Geometry> baseGeos = access.readGeometries("/home/spark/data/ict_landuse.shp");
-		List<Geometry> overlayGeos = access.readGeometries("/home/spark/data/ict_counties.shp");
+		List<Geometry> baseGeos = access.readGeometries("/home/iprobe/yaoxiao/data/ict_landuse.shp");
+		List<Geometry> overlayGeos = access.readGeometries("/home/iprobe/yaoxiao/data/ict_counties.shp");
 		long start = System.currentTimeMillis();
-		JavaRDD<Geometry> geosRDD = sc.parallelize(baseGeos, 10);
-
-		JavaRDD<List<Geometry>> resultRDD = geosRDD.map(new Function<Geometry, List<Geometry>>() {
-
+		JavaRDD<Geometry> baseGeosRDD = sc.parallelize(baseGeos);
+	//	JavaRDD<Geometry> overlayGeosRD = sc.parallelize(overlayGeos);
+		
+		JavaRDD<List<Geometry>> resultRDD = baseGeosRDD.map(new Function<Geometry, List<Geometry>>() {
+			//int i = 0;
 			@Override
 			public List<Geometry> call(Geometry geo1) throws Exception {
 				List<Geometry> result = new ArrayList<>();
 				for (Geometry geo2 : overlayGeos) {
 					if (geo1.intersects(geo2) || geo1.contains(geo2) || geo2.contains(geo1)) {
 						OverlayOpCpy op = new OverlayOpCpy(geo1, geo2);
+						//i++;
 						result.add(op.getResultGeometry(OverlayOpCpy.INTERSECTION));
 					}
 				}
@@ -54,7 +57,8 @@ public class SparkGis {
 		for (List<Geometry> geos : resultRDD.collect()) {
 			i += geos.size();
 		}
-		System.out.println("result count:" + i);
+		
 		long end = System.currentTimeMillis();
+		System.out.println("time used:" + (end - start));
 	}
 }
